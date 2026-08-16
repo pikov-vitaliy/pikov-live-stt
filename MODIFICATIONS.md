@@ -38,7 +38,10 @@ Pikov LiveSTT adds a Windows-focused local conference transcription profile:
 Publication hardening adds derivative attribution and third-party notices, a
 scoped SPDX 2.3 source SBOM, least-privilege GitHub workflow permissions,
 full-SHA action pins, exact CI tool versions, JavaScript-aware CodeQL, and the
-67-test Chromium extension suite as a CI job. The publication-candidate
+69-test Chromium extension suite as a CI job. A post-publication CodeQL finding
+is addressed by context-safe HTML encoding for every WebSocket-derived value in
+the bundled Web UI, with inline-resource and generated-extension synchronization
+regression tests. The publication-candidate
 dependency audit and bounded VEX decisions are recorded under `docs/`.
 Git attributes preserve the exact SBOM bytes covered by its SHA-256 checksum.
 Docker publication
@@ -69,12 +72,16 @@ changes in this repository:
 - `README.md`;
 - `SECURITY.md`;
 - `pyproject.toml`;
+- `scripts/sync_extension.py`;
 - `chrome-extension/README.md`;
 - `chrome-extension/background.js`;
 - `chrome-extension/manifest.json`;
 - `chrome-extension/requestPermissions.html`;
 - `chrome-extension/requestPermissions.js`;
-- `chrome-extension/sidepanel.js`.
+- `chrome-extension/sidepanel.js`;
+- `whisperlivekit/web/live_transcription.html`;
+- `whisperlivekit/web/live_transcription.js`;
+- `whisperlivekit/web/web_interface.py`.
 
 Each source or configuration format that supports comments also carries a short
 modified-file notice. The manifest uses its standard `description` field because
@@ -85,6 +92,7 @@ JSON does not support comments.
 The derivative adds the conference Docker profile and readiness check, Russian
 runbooks under `docs/`, the persistent extension runtime, presentation,
 archive, export, file-writer, and test modules under `chrome-extension/`, and
+the Web UI text-safety helper `whisperlivekit/web/text_safety.js`, and
 the derivative/third-party attribution files `NOTICE`,
 `THIRD_PARTY_NOTICES.md`, and `THIRD_PARTY_LICENSES.md`, plus a scoped source
 SBOM under `sbom/`, its checksum-preserving `.gitattributes` rule, and the

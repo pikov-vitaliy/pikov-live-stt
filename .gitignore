@@ -134,6 +134,7 @@ macos/*
 chrome-extension/live_transcription.html
 chrome-extension/live_transcription.js
 chrome-extension/live_transcription.css
+chrome-extension/text_safety.js
 chrome-extension/web/
 
 # Метаданные инструментов разработки, не часть проекта.
