@@ -541,7 +541,11 @@ test("the panel lets go of the file when the meeting that owned it ends", async 
       "with no file linked, the panel must offer to link one again",
     );
     assert.equal(harness.elements.get("unlinkFileButton").hidden, true);
-    assert.match(harness.elements.get("fileStatus").textContent, /отвязан/i);
+    assert.doesNotMatch(
+      harness.elements.get("fileStatus").textContent,
+      /обновляется/i,
+      "the panel must stop claiming a released file is still being written",
+    );
   } finally {
     harness.restore();
   }

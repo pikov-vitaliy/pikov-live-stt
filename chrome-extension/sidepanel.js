@@ -475,13 +475,13 @@ async function writeFileFromPanel() {
 
 /** The meeting the file belonged to is over: stop holding its handle. */
 function releaseFileLink(reason) {
-    if (!fileHandle) {
-        return;
-    }
+    const wasLinked = Boolean(fileHandle);
     fileHandle = null;
     panelLastWritten = null;
     offscreenWritesFile = false;
-    setFileStatus(reason);
+    // Always clear the status: leaving "файл обновляется" on screen after the
+    // file has been released is exactly the false claim this fix is about.
+    setFileStatus(wasLinked ? reason : "");
     updateControls();
 }
 
