@@ -10,14 +10,22 @@
         "128": "icons/icon128.png"
     },
     "action": {
-        "default_title": "WhisperLiveKit Tab Capture",
-        "default_popup": "live_transcription.html"
+        "default_title": "WhisperLiveKit Tab Capture"
+    },
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    },
+    "side_panel": {
+        "default_path": "sidepanel.html"
     },
     "permissions": [
-        "scripting",
         "tabCapture",
         "offscreen",
         "activeTab",
-        "storage"
-    ]
+        "storage",
+        "sidePanel",
+        "clipboardWrite"
+    ],
+    "minimum_chrome_version": "116"
 }

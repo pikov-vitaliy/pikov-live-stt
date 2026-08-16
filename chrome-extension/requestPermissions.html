@@ -1,12 +1,37 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ru">
   <head>
-    <title>Request Permissions</title>
-    <script src="requestPermissions.js"></script>
+    <meta charset="utf-8">
+    <title>WhisperLiveKit — доступ к микрофону</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+      body { margin: 0; display: grid; place-items: center; min-height: 100vh; padding: 24px; }
+      main { max-width: 34rem; display: grid; gap: 14px; }
+      h1 { margin: 0; font-size: 20px; }
+      p { margin: 0; line-height: 1.5; }
+      .hint { color: color-mix(in srgb, CanvasText 65%, Canvas 35%); font-size: 14px; }
+      button { padding: 10px 16px; font: inherit; cursor: pointer; justify-self: start; }
+      #state { min-height: 1.5em; font-weight: 600; }
+    </style>
   </head>
   <body>
-    This page exists to workaround an issue with Chrome that blocks permission
-    requests from chrome extensions
-    <button id="requestMicrophone">Request Microphone</button>
+    <main>
+      <h1>Разрешите доступ к микрофону</h1>
+      <p>
+        Расширение записывает звук вкладки. Чтобы в стенограмму попадали и ваши
+        собственные реплики, нужен доступ к микрофону — он запрашивается один раз.
+      </p>
+      <p class="hint">
+        Браузер не показывает такой запрос из фонового документа, поэтому он вынесен
+        на эту страницу. После разрешения вкладку можно закрыть — она закроется сама.
+      </p>
+      <button id="request" type="button">Разрешить доступ</button>
+      <p id="state" role="status"></p>
+      <p class="hint">
+        Микрофон включается только на время захвата и отпускается, когда вы завершаете
+        запись. Отключить его можно в боковой панели в любой момент.
+      </p>
+    </main>
+    <script src="requestPermissions.js"></script>
   </body>
 </html>

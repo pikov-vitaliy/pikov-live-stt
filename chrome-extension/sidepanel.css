@@ -1,0 +1,270 @@
+:root {
+    color-scheme: light dark;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    --transcript-font-size: 18px;
+}
+
+/*
+ * An author `display` rule beats the user-agent `[hidden] { display: none }`,
+ * so every block below that sets display would otherwise ignore `hidden` and
+ * stay on screen. This has to win.
+ */
+[hidden] {
+    display: none !important;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    color: CanvasText;
+    background: Canvas;
+}
+
+/*
+ * A fixed-height flex column rather than a guessed "100vh - 250px": the header
+ * grows past any constant once the buttons wrap on a narrow panel, which used
+ * to produce two nested scrollbars and push the transcript below the fold.
+ */
+main {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 100%;
+    min-height: 0;
+    padding: 14px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 17px;
+}
+
+p {
+    margin: 0;
+}
+
+.title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.session-clock {
+    color: color-mix(in srgb, CanvasText 60%, Canvas 40%);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+#status {
+    min-height: 1.4em;
+    font-size: 13px;
+}
+
+.field {
+    display: grid;
+    gap: 4px;
+    font-size: 12px;
+}
+
+input,
+select {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 6px;
+    font: inherit;
+    font-size: 13px;
+}
+
+.hint {
+    color: color-mix(in srgb, CanvasText 65%, Canvas 35%);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.hint:empty {
+    display: none;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 6px;
+}
+
+.controls .field {
+    flex: 1 1 140px;
+}
+
+button {
+    padding: 7px 10px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.secondary {
+    background: transparent;
+}
+
+.recovery {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border-left: 3px solid Highlight;
+    background: color-mix(in srgb, Highlight 12%, Canvas 88%);
+    font-size: 13px;
+}
+
+.recovery-title {
+    font-weight: 600;
+}
+
+.recovery-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.selection-bar {
+    align-items: center;
+    padding: 6px 8px;
+    border-radius: 4px;
+    background: color-mix(in srgb, Highlight 14%, Canvas 86%);
+    font-size: 13px;
+}
+
+.settings {
+    font-size: 13px;
+}
+
+.settings summary {
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.settings > *:not(summary) {
+    margin-top: 6px;
+}
+
+.font-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: color-mix(in srgb, CanvasText 78%, Canvas 22%);
+    font-size: 13px;
+}
+
+.font-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.font-buttons button {
+    min-width: 42px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.transcript-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#transcript {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    overflow: auto;
+    padding: 4px 2px;
+}
+
+.line {
+    position: relative;
+    padding: 7px 9px;
+    border-left: 3px solid Highlight;
+    background: color-mix(in srgb, CanvasText 7%, Canvas 93%);
+    line-height: 1.45;
+}
+
+.line.selected {
+    background: color-mix(in srgb, Highlight 22%, Canvas 78%);
+}
+
+.line-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+    color: color-mix(in srgb, CanvasText 60%, Canvas 40%);
+    font-size: 12px;
+}
+
+.line-speaker {
+    font-weight: 600;
+}
+
+.line-text {
+    font-size: var(--transcript-font-size);
+    white-space: pre-wrap;
+    /* The point of the whole exercise: the reader must be able to select this. */
+    user-select: text;
+}
+
+/*
+ * Reserved space, so revealing the button on hover never reflows the text the
+ * reader is in the middle of selecting.
+ */
+.line-copy {
+    margin-left: auto;
+    padding: 2px 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: inherit;
+    font-size: 11px;
+    visibility: hidden;
+}
+
+.line:hover .line-copy,
+.line:focus-within .line-copy {
+    visibility: visible;
+    border-color: color-mix(in srgb, CanvasText 30%, Canvas 70%);
+}
+
+.line.buffer {
+    border-left-color: GrayText;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.follow {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    padding: 6px 12px;
+    border: 1px solid color-mix(in srgb, CanvasText 30%, Canvas 70%);
+    border-radius: 999px;
+    background: Canvas;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .line-copy {
+        transition: border-color 120ms ease;
+    }
+}
