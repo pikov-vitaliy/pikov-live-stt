@@ -1,0 +1,48 @@
+services:
+  whisperlivekit-conference:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Linux/CUDA profile from the repository lock file.
+        EXTRAS: cu129
+    image: whisperlivekit:conference-local
+    container_name: whisperlivekit-conference
+    gpus: all
+    # Restart automatically with Docker Desktop, but preserve an explicit
+    # manual stop so GPU memory can be released when transcription is not used.
+    restart: unless-stopped
+    ports:
+      # Keep the speech service off the LAN; port 8000 is already in use locally.
+      - "127.0.0.1:${WLK_PORT:-8001}:8000"
+    volumes:
+      # Model weights survive container recreation and can be inspected or pinned.
+      - wlk-hf-cache:/root/.cache/huggingface/hub
+    environment:
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      HF_HUB_DISABLE_IMPLICIT_TOKEN: "1"
+      DO_NOT_TRACK: "1"
+      # Set WLK_OFFLINE=1 only after the selected model has been downloaded.
+      HF_HUB_OFFLINE: "${WLK_OFFLINE:-0}"
+    command:
+      - --port
+      - "8000"
+      - --backend
+      - faster-whisper
+      # Do not use the default SimulStreaming policy for this local work profile.
+      - --backend-policy
+      - localagreement
+      - --model
+      - "${WLK_MODEL:-large-v3}"
+      - --language
+      - "${WLK_LANGUAGE:-ru}"
+      # Avoid an unreviewed warm-up audio download at every initial startup.
+      - --warmup-file
+      - ""
+      - --retention-seconds
+      - "300"
+      - --log-level
+      - INFO
+
+volumes:
+  wlk-hf-cache:

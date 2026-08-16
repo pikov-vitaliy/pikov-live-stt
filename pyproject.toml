@@ -1,5 +1,6 @@
+# Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 [build-system]
-requires = ["setuptools>=77.0.0"]
+requires = ["setuptools>=83.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,9 +8,18 @@ name = "whisperlivekit"
 version = "0.2.25"
 description = "Real-time speech-to-text models"
 readme = "README.md"
-authors = [{ name = "Quentin Fuxa" }]
+authors = [
+    { name = "Quentin Fuxa" },
+    { name = "Vitaly Pikov" },
+]
+maintainers = [{ name = "Vitaly Pikov" }]
 license = "Apache-2.0"
-license-files = ["LICENSE"]
+license-files = [
+    "LICENSE",
+    "NOTICE",
+    "THIRD_PARTY_NOTICES.md",
+    "THIRD_PARTY_LICENSES.md",
+]
 requires-python = ">=3.11, <3.14"
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -179,7 +189,11 @@ url = "https://download.pytorch.org/whl/cu129"
 explicit = true
 
 [project.urls]
-Homepage = "https://github.com/QuentinFuxa/WhisperLiveKit"
+Homepage = "https://github.com/pikov-vitaliy/pikov-live-stt"
+Repository = "https://github.com/pikov-vitaliy/pikov-live-stt"
+Documentation = "https://github.com/pikov-vitaliy/pikov-live-stt/tree/main/docs"
+Issues = "https://github.com/pikov-vitaliy/pikov-live-stt/issues"
+Upstream = "https://github.com/QuentinFuxa/WhisperLiveKit"
 
 [project.scripts]
 whisperlivekit-server = "whisperlivekit.basic_server:main"

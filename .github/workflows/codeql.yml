@@ -1,3 +1,4 @@
+# Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 name: CodeQL
 
 on:
@@ -16,7 +17,7 @@ concurrency:
 
 jobs:
   analyze:
-    name: Analyze Python
+    name: Analyze Python and JavaScript
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -31,6 +32,6 @@ jobs:
 
       - uses: github/codeql-action/init@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4
         with:
-          languages: python
+          languages: python,javascript-typescript
 
       - uses: github/codeql-action/analyze@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd # v4

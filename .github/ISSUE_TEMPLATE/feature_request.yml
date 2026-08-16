@@ -1,5 +1,6 @@
+# Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 name: Feature request
-description: Propose a focused improvement to WhisperLiveKit
+description: Propose a focused improvement to Pikov LiveSTT
 title: "[Feature]: "
 labels: ["enhancement"]
 body:

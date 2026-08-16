@@ -1,5 +1,6 @@
+# Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 name: Bug report
-description: Report a reproducible problem in WhisperLiveKit
+description: Report a reproducible problem in Pikov LiveSTT
 title: "[Bug]: "
 labels: ["bug"]
 body:
@@ -10,7 +11,7 @@ body:
       options:
         - label: I searched the existing issues and discussions.
           required: true
-        - label: I reproduced the problem with the latest WhisperLiveKit release or current main.
+        - label: I reproduced the problem with the current Pikov LiveSTT main branch.
           required: true
 
   - type: textarea
@@ -34,16 +35,18 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Include the WhisperLiveKit version, installation method, operating system, Python version, backend, policy, model, device, and relevant flags.
+      description: Include the Pikov LiveSTT commit, browser/extension, Docker/OS/GPU, WhisperLiveKit backend, policy, model, and relevant flags.
       placeholder: |
-        WhisperLiveKit: 0.x.y
-        Install: pip
-        OS: Ubuntu 24.04
-        Python: 3.12
-        Backend: faster-whisper
-        Policy: simulstreaming
-        Model: base
-        Device: CPU
+        Pikov LiveSTT commit: abcdef0
+        Browser and version: Chrome 000
+        Extension version: 1.0
+        Docker Desktop: 0.0.0
+        OS: Windows 11
+        GPU: NVIDIA GPU / driver version
+        WhisperLiveKit backend: faster-whisper
+        Policy: localagreement
+        Model: large-v3
+        Relevant flags: --language ru
     validations:
       required: true
 
@@ -51,11 +54,11 @@ body:
     id: logs
     attributes:
       label: Logs
-      description: Paste the complete relevant traceback or logs. Remove secrets and private data first.
+      description: Paste the relevant traceback or logs. Remove secrets, personal data, meeting content, and local paths first.
       render: text
 
   - type: textarea
     id: additional-context
     attributes:
       label: Additional context
-      description: Add recordings, screenshots, profiling results, or other useful context.
+      description: Add sanitized screenshots, profiling results, or a synthetic/public-domain audio fixture. Do not attach real meeting audio or transcripts.

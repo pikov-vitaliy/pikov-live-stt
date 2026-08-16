@@ -1,0 +1,98 @@
+<!doctype html>
+<!-- Copyright 2026 Vitaly Pikov. SPDX-License-Identifier: Apache-2.0. -->
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pikov LiveSTT</title>
+    <link rel="stylesheet" href="sidepanel.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="title-row">
+          <h1>Pikov LiveSTT</h1>
+          <span id="sessionClock" class="session-clock"></span>
+        </div>
+        <p id="status" role="status">Подключение к сессии…</p>
+      </header>
+
+      <section id="recovery" class="recovery" hidden aria-label="Незавершённая стенограмма прошлой встречи">
+        <p class="recovery-title">Осталась незавершённая стенограмма</p>
+        <p id="recoveryText"></p>
+        <div class="recovery-actions">
+          <button id="restoreButton" type="button">Открыть её здесь</button>
+          <button id="discardButton" type="button" class="secondary">Удалить навсегда</button>
+        </div>
+        <p class="hint">Встреча прервалась, не дойдя до штатной остановки — например, браузер закрылся. Откройте, чтобы прочитать и сохранить в <code>.md</code>.</p>
+      </section>
+
+      <section class="controls" aria-label="Управление транскрипцией">
+        <button id="pauseButton" type="button" disabled>⏸ Пауза</button>
+        <button id="resumeButton" type="button" hidden>▶ Продолжить</button>
+        <button id="stopButton" type="button" class="secondary" disabled>⏹ Завершить</button>
+        <button id="clearScreenButton" type="button" class="secondary" disabled>🧹 Очистить экран</button>
+      </section>
+
+      <section class="controls" aria-label="Микрофон">
+        <label class="toggle">
+          <input id="microphoneToggle" type="checkbox">
+          <span>Записывать мой микрофон</span>
+        </label>
+        <p id="microphoneStatus" class="hint"></p>
+      </section>
+
+      <section class="controls" aria-label="Экспорт стенограммы">
+        <label class="field">
+          <span>Формат</span>
+          <select id="formatSelect">
+            <option value="dialogue">Диалог — сплошной текст</option>
+            <option value="timestamps">С таймкодами</option>
+            <option value="plain">Простой текст</option>
+          </select>
+        </label>
+        <button id="copyMarkdownButton" type="button" class="secondary" disabled>Копировать всё</button>
+        <button id="saveMarkdownButton" type="button" class="secondary" disabled>Сохранить .md</button>
+      </section>
+
+      <section class="controls" aria-label="Живая запись в файл">
+        <button id="linkFileButton" type="button" class="secondary">Писать в файл…</button>
+        <button id="unlinkFileButton" type="button" class="secondary" hidden>Отключить файл</button>
+        <p id="fileStatus" class="hint"></p>
+      </section>
+
+      <section id="selectionBar" class="controls selection-bar" hidden aria-label="Выбранные реплики">
+        <span id="selectionCount"></span>
+        <button id="copySelectedButton" type="button">Копировать выбранное</button>
+        <button id="clearSelectionButton" type="button" class="secondary">Снять выделение</button>
+      </section>
+
+      <section class="font-controls" aria-label="Размер текста стенограммы">
+        <span id="transcriptFontSizeLabel">Размер текста: 18 px</span>
+        <div class="font-buttons">
+          <button id="decreaseFontButton" type="button" aria-label="Уменьшить размер текста стенограммы" title="Уменьшить текст">A−</button>
+          <button id="increaseFontButton" type="button" aria-label="Увеличить размер текста стенограммы" title="Увеличить текст">A+</button>
+        </div>
+      </section>
+
+      <details class="settings">
+        <summary>Настройки и справка</summary>
+        <label class="field">
+          <span>Локальный сервер</span>
+          <input id="websocketUrl" type="url" spellcheck="false" value="ws://127.0.0.1:8001/asr">
+        </label>
+        <p class="hint">Разрешён только адрес <code>ws://</code> на localhost. Изменение применяется к следующей встрече.</p>
+        <p class="hint">Панель можно закрывать: транскрипция продолжится. Двойной клик по реплике копирует её, Ctrl+клик — добавляет к выделению.</p>
+        <p class="hint">Экспорт содержит все реплики этой сессии, а не только видимые. Буфер обмена может сохраняться программами истории или синхронизации ОС.</p>
+      </details>
+
+      <p id="emptyHint" class="hint"></p>
+
+      <div class="transcript-wrap">
+        <section id="transcript" aria-live="off" aria-label="Живая транскрипция" tabindex="0"></section>
+        <button id="followButton" type="button" class="follow" hidden>↓ Новые реплики</button>
+      </div>
+    </main>
+    <script type="module" src="sidepanel.js"></script>
+  </body>
+</html>

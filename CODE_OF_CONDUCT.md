@@ -1,5 +1,9 @@
 # Contributor Covenant 3.0 Code of Conduct
 
+> Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on the upstream
+> WhisperLiveKit Code of Conduct. The confidential reporting channel below is
+> maintained by the Pikov LiveSTT project.
+
 ## Our Pledge
 
 We pledge to make our community welcoming, safe, and equitable for all.
@@ -43,7 +47,7 @@ We agree to restrict the following behaviors in our community. Instances, threat
 
 Tensions can occur between community members even when they are trying their best to collaborate. Not every conflict represents a code of conduct violation, and this Code of Conduct reinforces encouraged behaviors and norms that can help avoid conflicts and minimize harm.
 
-When an incident does occur, it is important to report it promptly. To report a possible violation, email the Project Maintainer at [quentin.fuxa@gmail.com](mailto:quentin.fuxa@gmail.com). Do not open a public issue. Reports will be handled confidentially.
+When an incident does occur, it is important to report it promptly. To report a possible violation, use the repository's [private reporting form](https://github.com/pikov-vitaliy/pikov-live-stt/security/advisories/new) and begin the report title with `Code of Conduct`. Do not open a public issue. Reports will be handled confidentially by the Pikov LiveSTT maintainer.
 
 The Project Maintainer takes reports of violations seriously and will make every effort to respond in a timely manner. They will investigate all reports of code of conduct violations, reviewing messages, logs, and recordings, or interviewing witnesses and other participants. The Project Maintainer will keep investigation and enforcement actions as transparent as possible while prioritizing safety and confidentiality. In order to honor these values, enforcement actions are carried out in private with the involved parties, but communicating to the whole community may be part of a mutually agreed upon resolution.
 

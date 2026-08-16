@@ -201,8 +201,12 @@
    limitations under the License.
 ---
 
+Derivative project notice: Modified in 2026 by Vitaly Pikov for Pikov LiveSTT;
+the SimulWhisper source URL below was corrected. The license terms above are
+unchanged.
+
 ## Based on:
-- **SimulWhisper** by Speech and Audio Technology LAB of Tsinghua University – Apache-2.0 – https://github.com/ufal/SimulStreaming
+- **SimulWhisper** by Speech and Audio Technology LAB of Tsinghua University – Apache-2.0 – https://github.com/backspacetg/simul_whisper
 - **SimulStreaming** by ÚFAL – MIT License – https://github.com/ufal/SimulStreaming
 - **NeMo** by NVidia - Apache-2.0 - https://github.com/NVIDIA-NeMo/NeMo 
 - **whisper_streaming** by ÚFAL – MIT License – https://github.com/ufal/whisper_streaming.

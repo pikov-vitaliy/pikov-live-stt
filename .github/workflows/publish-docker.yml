@@ -1,3 +1,4 @@
+# Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 name: Publish Docker Images
 
 on:
@@ -74,5 +75,5 @@ jobs:
           build-args: |
             EXTRAS=${{ matrix.extras }}
           tags: |
-            ghcr.io/${{ steps.owner.outputs.value }}/whisperlivekit:${{ env.IMAGE_TAG }}-${{ matrix.image_suffix }}
-            ghcr.io/${{ steps.owner.outputs.value }}/whisperlivekit:latest-${{ matrix.image_suffix }}
+            ghcr.io/${{ steps.owner.outputs.value }}/pikov-live-stt:${{ env.IMAGE_TAG }}-${{ matrix.image_suffix }}
+            ghcr.io/${{ steps.owner.outputs.value }}/pikov-live-stt:latest-${{ matrix.image_suffix }}

@@ -1,0 +1,4 @@
+# Added in 2026 by Vitaly Pikov for Pikov LiveSTT.
+# Preserve the exact bytes covered by the published SHA-256 checksum.
+sbom/*.json -text
+sbom/*.sha256 text eol=lf
