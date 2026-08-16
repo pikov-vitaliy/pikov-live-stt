@@ -26,6 +26,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 $problems = [System.Collections.Generic.List[string]]::new()
+$sampleUri = "https://raw.githubusercontent.com/ggerganov/whisper.cpp/1fe009caeda75f69bc864d6370b10674e45a92bd/samples/jfk.wav"
+$sampleSha256 = "59DFB9A4ACB36FE2A2AFFC14BACBEE2920FF435CB13CC314A08C13F66BA7860E"
 
 function Write-Step {
     param([string]$Text)
@@ -45,6 +47,22 @@ function Write-Bad {
     $script:problems.Add($Text)
 }
 
+# Длительность образца нужна, чтобы сравнить с ней время распознавания:
+# на CPU сервис тоже "работает", просто не успевает за живой речью.
+function Get-WavDurationSeconds {
+    param([string]$Path)
+    try {
+        $bytes = [System.IO.File]::ReadAllBytes($Path)
+        if ($bytes.Length -lt 44) { return $null }
+        if ([System.Text.Encoding]::ASCII.GetString($bytes, 0, 4) -ne 'RIFF') { return $null }
+        $byteRate = [BitConverter]::ToUInt32($bytes, 28)
+        if ($byteRate -le 0) { return $null }
+        return [math]::Round(($bytes.Length - 44) / $byteRate, 2)
+    } catch {
+        return $null
+    }
+}
+
 # --- 1. Docker -------------------------------------------------------------
 
 Write-Step "Docker"
@@ -62,11 +80,13 @@ try {
 # --- 2. Контейнер ----------------------------------------------------------
 
 Write-Step "Контейнер"
+$containerRunning = $false
 $status = docker inspect --format '{{.State.Status}}|{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' $ContainerName 2>$null
 if ($LASTEXITCODE -ne 0) {
     Write-Bad "Контейнер $ContainerName не создан." "docker compose -f $ComposeFile up -d --wait"
 } else {
     $state, $health = $status -split '\|'
+    $containerRunning = ($state -eq "running")
     if ($state -ne "running") {
         # Причина отказа при запуске живёт не в журнале, а в состоянии
         # контейнера: без неё "created" выглядит как загадка.
@@ -95,9 +115,36 @@ if ($LASTEXITCODE -ne 0) {
     } elseif ($ports) {
         Write-Ok "порт только на loopback: $($ports -join ', ')"
     }
+
+    # Без политики перезапуска сервис не вернётся после перезапуска Docker или
+    # WSL. Именно так он молча пролежал 16.08.2026: виртуальная машина WSL
+    # перезапустилась, все прочие контейнеры вернулись сами, а этот остался
+    # лежать — и обнаружилось это только перед встречей.
+    $policy = docker inspect --format '{{.HostConfig.RestartPolicy.Name}}' $ContainerName 2>$null
+    if ($policy -in @('unless-stopped', 'always')) {
+        Write-Ok "автозапуск включён (restart=$policy)"
+    } else {
+        Write-Bad "Автозапуск выключен (restart=$policy): после перезапуска Docker или WSL сервис не вернётся." `
+            "Убедитесь, что в $ComposeFile есть 'restart: unless-stopped', затем: docker compose -f $ComposeFile up -d --wait"
+    }
 }
 
-# --- 3. HTTP ---------------------------------------------------------------
+# --- 3. GPU ----------------------------------------------------------------
+
+Write-Step "GPU"
+if (-not $containerRunning) {
+    Write-Host "        контейнер не запущен — проверка пропущена" -ForegroundColor DarkGray
+} else {
+    $gpuName = (docker exec $ContainerName nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>&1 | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($gpuName)) {
+        Write-Bad "Контейнер не видит видеокарту — распознавание уйдёт на CPU." `
+            "Бэкенд выбирает устройство сам, поэтому модель всё равно загрузится и /health будет зелёным — сервис просто не будет успевать за речью. Выполните wsl --shutdown, дождитесь Docker Desktop, затем: docker compose -f $ComposeFile up -d --force-recreate --wait"
+    } else {
+        Write-Ok "видна видеокарта: $gpuName"
+    }
+}
+
+# --- 4. HTTP ---------------------------------------------------------------
 
 Write-Step "HTTP"
 try {
@@ -112,26 +159,36 @@ try {
     Write-Bad "$BaseUrl/health недоступен." "Проверьте, что контейнер запущен и порт совпадает."
 }
 
-# --- 4. Настоящее распознавание -------------------------------------------
+# --- 5. Настоящее распознавание -------------------------------------------
 
 Write-Step "Реальное распознавание"
 $sample = Join-Path $env:TEMP "whisper_warmup_jfk.wav"
-if (-not (Test-Path $sample) -or (Get-Item $sample).Length -eq 0) {
+$sampleIsValid = (Test-Path -LiteralPath $sample) -and
+    ((Get-FileHash -LiteralPath $sample -Algorithm SHA256).Hash -eq $sampleSha256)
+if (-not $sampleIsValid) {
     try {
         Write-Host "        загружаю образец речи..." -ForegroundColor DarkGray
-        Invoke-WebRequest -Uri "https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav" -OutFile $sample -TimeoutSec 30
+        Invoke-WebRequest -Uri $sampleUri -OutFile $sample -TimeoutSec 30
+        $downloadedHash = (Get-FileHash -LiteralPath $sample -Algorithm SHA256).Hash
+        if ($downloadedHash -ne $sampleSha256) {
+            Remove-Item -LiteralPath $sample -Force
+            throw "SHA-256 mismatch: expected $sampleSha256, received $downloadedHash"
+        }
     } catch {
-        Write-Bad "Образец речи недоступен — распознавание НЕ проверено." `
-            "Проверьте сеть или положите любой речевой .wav по пути $sample. Без этого шага зелёный итог ничего не гарантирует."
+        Write-Bad "Проверенный образец речи недоступен — распознавание НЕ проверено." `
+            "Проверьте сеть и повторите запуск. Скрипт принимает только закреплённый файл с ожидаемым SHA-256."
     }
+}
+
+function Invoke-Transcription {
+    curl.exe -s -X POST "$BaseUrl/v1/audio/transcriptions" `
+        -F "file=@$sample" -F "language=en" -F "response_format=json" --max-time 180
 }
 
 $recognised = $null
 if (Test-Path $sample) {
     try {
-        $raw = curl.exe -s -X POST "$BaseUrl/v1/audio/transcriptions" `
-            -F "file=@$sample" -F "language=en" -F "response_format=json" --max-time 180
-        $recognised = ($raw | ConvertFrom-Json).text
+        $recognised = (Invoke-Transcription | ConvertFrom-Json).text
     } catch {
         Write-Bad "Запрос на распознавание не прошёл." "Смотрите журнал: docker compose -f $ComposeFile logs --tail 100"
     }
@@ -139,14 +196,33 @@ if (Test-Path $sample) {
     if ($null -ne $recognised) {
         if ([string]::IsNullOrWhiteSpace($recognised)) {
             Write-Bad "Сервис принял файл, но не распознал НИ ОДНОГО слова." `
-                "Это ровно та поломка, при которой /health продолжает врать. Чаще всего — GPU. См. шаг 5."
+                "Это ровно та поломка, при которой /health продолжает врать. Чаще всего — GPU. См. шаги 3 и 6."
         } else {
             Write-Ok "распознано: '$($recognised.Trim())'"
+
+            # Скорость меряем ВТОРЫМ запросом: на первом после старта контейнера
+            # ещё компилируются CUDA-ядра, и он не отражает рабочий темп.
+            $duration = Get-WavDurationSeconds $sample
+            if ($null -eq $duration) {
+                Write-Host "        длительность образца не определена — скорость не проверена" -ForegroundColor DarkGray
+            } else {
+                $sw = [System.Diagnostics.Stopwatch]::StartNew()
+                $null = Invoke-Transcription
+                $sw.Stop()
+                $elapsed = [math]::Round($sw.Elapsed.TotalSeconds, 1)
+                if ($elapsed -ge $duration) {
+                    Write-Bad "Распознавание медленнее реального времени: ${elapsed} с на ${duration} с речи." `
+                        "На живой встрече отставание будет только расти. Обычная причина — модель ушла на CPU: устройство выбирается автоматически, и без видимого GPU сервис молча продолжает работать вдвое-впятеро медленнее. См. шаг 3."
+                } else {
+                    $margin = [math]::Round($duration / [math]::Max($elapsed, 0.1), 1)
+                    Write-Ok "скорость: ${elapsed} с на ${duration} с речи (запас x$margin)"
+                }
+            }
         }
     }
 }
 
-# --- 5. Журнал -------------------------------------------------------------
+# --- 6. Журнал -------------------------------------------------------------
 
 Write-Step "Журнал контейнера"
 $log = docker logs --tail $LogLines $ContainerName 2>&1 | Out-String

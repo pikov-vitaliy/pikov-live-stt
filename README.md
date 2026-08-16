@@ -1,3 +1,92 @@
+<!-- Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit. -->
+# Pikov LiveSTT
+
+**Local-first live transcription of Chromium browser tabs, based on
+[WhisperLiveKit](https://github.com/QuentinFuxa/WhisperLiveKit). Russian-first,
+Docker Desktop and NVIDIA GPU ready.**
+
+**Pikov LiveSTT** is a maintained derivative focused on a practical Windows
+conference workflow: start a local GPU-backed ASR service, capture the selected
+Chromium tab without tying capture to a popup, optionally mix in the local
+microphone, and save the complete transcript as Markdown. Chrome and Brave were
+live-tested; Edge uses the same required APIs but still needs a separate live
+acceptance test.
+
+> **По-русски:** локальная онлайн-транскрипция аудио вкладок Chromium с
+> экспортом полной стенограммы в Markdown. Основная инструкция находится в
+> [`docs/LOCAL-CONFERENCE-TRANSCRIPTION-RU.md`](docs/LOCAL-CONFERENCE-TRANSCRIPTION-RU.md).
+
+> [!IMPORTANT]
+> This repository was modified in 2026 by Vitaly Pikov for Pikov LiveSTT and is
+> based on WhisperLiveKit, Copyright 2025 Quentin Fuxa. It is independently
+> maintained and is not affiliated with or
+> endorsed by OpenAI or the upstream WhisperLiveKit project. The Python package,
+> CLI, and server API retain their upstream `whisperlivekit` / `wlk` names for
+> compatibility.
+
+## What this fork adds
+
+- a Manifest V3 Chromium extension whose capture continues when its side panel
+  is closed;
+- selected-tab audio capture with an optional, separately consented microphone;
+- pause/resume, readable live updates, font controls, and explicit stop/finalize;
+- full-session client-side archival despite the server's rolling retention;
+- Markdown, plain-text, and timestamped export, plus an optional user-selected
+  live Markdown file;
+- a Windows + Docker Desktop + NVIDIA profile using `faster-whisper`,
+  `localagreement`, Russian, and `large-v3`;
+- a speech-based readiness check that verifies inference instead of trusting
+  `/health` alone.
+
+## Quick start on Windows
+
+```powershell
+git clone --recurse-submodules https://github.com/pikov-vitaliy/pikov-live-stt.git
+Set-Location -LiteralPath '.\pikov-live-stt'
+docker compose -f compose.conference.local.yml up -d --wait
+.\scripts\check-conference-service.ps1
+```
+
+Then load [`chrome-extension`](chrome-extension) as an unpacked extension,
+open the tab whose audio may be transcribed, and click **Pikov LiveSTT**.
+Inference is local; the Docker model cache is not stored in Git.
+
+Operational and design documentation:
+
+- [restart and usage runbook](docs/LOCAL-CONFERENCE-TRANSCRIPTION-RU.md);
+- [current architecture and decisions](docs/LOCAL-CONFERENCE-STATE-RU.md);
+- [changes from upstream](docs/LOCAL-CONFERENCE-TRANSCRIPTION-CHANGES-RU.md);
+- [third-party provenance and modification record](MODIFICATIONS.md);
+- [publication-candidate dependency audit and VEX decisions](docs/SECURITY-AUDIT-2026-08-16.md);
+- [source SBOM and its scope limitations](sbom/README.md).
+
+## Security, privacy, and licensing
+
+Bind the service to loopback only, obtain the required authorization before
+recording people, and treat transcript files as potentially sensitive data.
+Report suspected vulnerabilities through this repository's private vulnerability
+reporting channel; do not include meeting content, credentials, or personal data
+in a public issue.
+
+The project is distributed under Apache-2.0. The original copyright and license
+are preserved in [`LICENSE`](LICENSE); derivative attribution is recorded in
+[`NOTICE`](NOTICE), bundled-component terms in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and
+[`THIRD_PARTY_LICENSES.md`](THIRD_PARTY_LICENSES.md), and changed-file
+provenance in [`MODIFICATIONS.md`](MODIFICATIONS.md).
+
+---
+
+## Upstream WhisperLiveKit documentation
+
+> [!WARNING]
+> The preserved upstream documentation below contains general server examples
+> such as `--host 0.0.0.0` and `-p 8000:8000`. They are **not approved for the
+> Pikov LiveSTT conference profile**, whose API has no perimeter-grade network
+> protection. Use `compose.conference.local.yml`, which publishes only
+> `127.0.0.1:8001`, unless a separately reviewed authenticated gateway,
+> firewall policy, and transport-security design are in place.
+
 <p align="center">
   <img width="330" alt="wlk" src="https://raw.githubusercontent.com/QuentinFuxa/WhisperLiveKit/refs/heads/main/wlk.png" />
 </p>
@@ -16,7 +105,7 @@
 <a href="https://huggingface.co/qfuxa/qwen3-asr-0.6b-streaming">
   <img alt="Hugging Face models" src="https://img.shields.io/badge/🤗-Hugging%20Face%20Weights-yellow" />
 </a>
-<a href="https://github.com/QuentinFuxa/WhisperLiveKit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache 2.0-dark_green"></a>
+<a href="https://github.com/pikov-vitaliy/pikov-live-stt/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache 2.0-dark_green"></a>
 </p>
 
 
@@ -159,11 +248,9 @@ We are actively looking for benchmark results on other hardware (different NVIDI
 
 #### Use it to capture audio from web pages.
 
-Go to `chrome-extension` for instructions.
-
-<p align="center">
-<img src="https://raw.githubusercontent.com/QuentinFuxa/WhisperLiveKit/refs/heads/main/chrome-extension/demo-extension.png" alt="WhisperLiveKit Demo" width="600">
-</p>
+The upstream extension screenshot is intentionally omitted here because Pikov
+LiveSTT replaces its popup workflow with a persistent side panel. See the
+current [`chrome-extension` instructions](chrome-extension/README.md).
 
 
 ### Voxtral Backend
@@ -184,7 +271,8 @@ wlk --backend voxtral
 ```
 
 Voxtral uses its own streaming policy and does not use LocalAgreement or SimulStreaming.
-See [BENCHMARK.md](BENCHMARK.md) for performance numbers.
+See the [archived benchmark reports](benchmarks/archive/README.md) for
+performance numbers.
 
 ### FunASR / SenseVoiceSmall
 

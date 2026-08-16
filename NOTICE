@@ -1,0 +1,18 @@
+Pikov LiveSTT
+Copyright 2026 Vitaly Pikov
+
+This product includes software derived from WhisperLiveKit,
+Copyright 2025 Quentin Fuxa
+(https://github.com/QuentinFuxa/WhisperLiveKit).
+
+Pikov LiveSTT modifications are Copyright 2026 Vitaly Pikov.
+Except where an individual file states otherwise, the WhisperLiveKit-derived
+work and Pikov LiveSTT modifications are distributed under the Apache License,
+Version 2.0. Bundled third-party components remain under their respective
+licenses identified in LICENSE and third-party notices.
+
+This distribution includes third-party software; see THIRD_PARTY_NOTICES.md
+and THIRD_PARTY_LICENSES.md.
+
+This derivative project is independently maintained and is not endorsed by
+or affiliated with OpenAI, the WhisperLiveKit project, or its author.

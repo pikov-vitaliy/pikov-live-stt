@@ -328,7 +328,7 @@ export class CaptureSession {
         // actually pausing it. Chromium ELIDES the paused interval from the
         // container timeline, so the server would never see a gap; its rule for
         // closing a line needs more than five seconds of silence in AUDIO time
-        // (audio_processor.py:26,292). Without this the line open at pause
+        // (audio_processor.py:28,322). Without this the line open at pause
         // swallows the first words of the next segment.
         this.pauseTimer = this.schedule(() => {
             this.pauseTimer = null;

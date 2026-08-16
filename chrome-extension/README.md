@@ -1,4 +1,7 @@
-# WhisperLiveKit: устойчивая транскрипция аудио вкладки Chrome
+# Pikov LiveSTT: расширение для живой транскрипции
+
+> Изменено в 2026 году Виталием Пиковым для Pikov LiveSTT на основе
+> WhisperLiveKit. Подробности происхождения: [`MODIFICATIONS.md`](../MODIFICATIONS.md).
 
 Расширение захватывает звук выбранной вкладки и передаёт его в локальный WhisperLiveKit по WebSocket. По желанию к нему подмешивается ваш микрофон — по умолчанию он выключен и запрашивается отдельно.
 
@@ -7,14 +10,14 @@
   -> фоновый offscreen-документ захватывает звук вкладки
   -> ws://127.0.0.1:8001/asr
   -> локальный WhisperLiveKit
-  -> боковая панель Chrome с живой транскрипцией
+  -> боковая панель Chromium-браузера с живой транскрипцией
 ```
 
 В отличие от прежней реализации в popup, захват, WebSocket и `MediaRecorder` живут вне интерфейса. Поэтому клик вне панели или её закрытие не останавливают транскрипцию.
 
 ## Требования
 
-- Chrome 116 или новее (для service worker → `tabCapture.getMediaStreamId()` → offscreen document);
+- Chromium 116 или новее (для service worker → `tabCapture.getMediaStreamId()` → offscreen document); Chrome и Brave проверены, Edge требует отдельного живого теста;
 - локальный сервер WhisperLiveKit, доступный по `ws://127.0.0.1:8001/asr`;
 - вкладка с конференцией, открытая в Chrome.
 
@@ -23,15 +26,15 @@
 1. Запустите локальный сервер из корня репозитория:
 
    ```powershell
-   docker compose -f compose.conference.local.yml up -d
-   Invoke-RestMethod http://127.0.0.1:8001/health
+   docker compose -f compose.conference.local.yml up -d --wait
+   .\scripts\check-conference-service.ps1
    ```
 
-2. Откройте `chrome://extensions` (в Brave — `brave://extensions`), включите «Режим разработчика» и загрузите распакованное расширение из `V:\WhisperLiveKit\chrome-extension`.
+2. Откройте `chrome://extensions` (в Brave — `brave://extensions`), включите «Режим разработчика» и загрузите распакованное расширение из `<путь-к-клону>\chrome-extension`. На исходной машине это `V:\WhisperLiveKit\chrome-extension`.
 
 3. Если расширение уже было загружено, нажмите его кнопку «Обновить» на странице `chrome://extensions`. Это обязательно после перехода с popup на боковую панель.
 
-4. Откройте вкладку Контур.Толка, убедитесь, что звук вкладки слышен, и нажмите иконку `WhisperLiveKit Tab Capture` в панели Chrome.
+4. Откройте вкладку Контур.Толка, убедитесь, что звук вкладки слышен, и нажмите иконку `Pikov LiveSTT` в панели браузера.
 
 5. Chrome откроет боковую панель и транскрипция начнётся автоматически. В панели оставьте адрес `ws://127.0.0.1:8001/asr`.
 

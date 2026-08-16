@@ -1,3 +1,4 @@
+// Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 import { TranscriptStore } from "./transcript-store.js";
 
 const DEFAULT_WEBSOCKET_URL = "ws://127.0.0.1:8001/asr";

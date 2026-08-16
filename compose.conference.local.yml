@@ -9,6 +9,9 @@ services:
     image: whisperlivekit:conference-local
     container_name: whisperlivekit-conference
     gpus: all
+    # Restart automatically with Docker Desktop, but preserve an explicit
+    # manual stop so GPU memory can be released when transcription is not used.
+    restart: unless-stopped
     ports:
       # Keep the speech service off the LAN; port 8000 is already in use locally.
       - "127.0.0.1:${WLK_PORT:-8001}:8000"

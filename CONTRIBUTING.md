@@ -1,6 +1,8 @@
 # Contributing
 
-Thanks for helping improve WhisperLiveKit. Bug fixes, documentation, tests, and focused features are welcome.
+> Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
+
+Thanks for helping improve Pikov LiveSTT. Bug fixes, documentation, tests, and focused features are welcome. Changes to the generic WhisperLiveKit engine should remain upstream-compatible whenever practical.
 
 Participation in the project is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -14,7 +16,9 @@ A useful bug report includes:
 - the backend, model, operating system, Python version, and accelerator;
 - the expected and observed behavior;
 - the complete traceback or relevant logs;
-- a minimal audio sample or reproduction when licensing permits it.
+- a synthetic or public-domain audio sample when one is essential.
+
+Never attach real meeting audio, transcripts, credentials, or personal data to a public issue or pull request.
 
 Security reports should follow [SECURITY.md](SECURITY.md) and must not be filed as public issues.
 
@@ -23,8 +27,8 @@ Security reports should follow [SECURITY.md](SECURITY.md) and must not be filed 
 Clone the repository with its submodule, then install the development and test dependencies:
 
 ```bash
-git clone --recurse-submodules https://github.com/QuentinFuxa/WhisperLiveKit.git
-cd WhisperLiveKit
+git clone --recurse-submodules https://github.com/pikov-vitaliy/pikov-live-stt.git
+cd pikov-live-stt
 uv sync --extra test
 ```
 

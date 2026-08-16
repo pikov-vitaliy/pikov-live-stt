@@ -1,3 +1,4 @@
+// Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 /**
  * Obtains the microphone grant for this extension's origin.
  *
