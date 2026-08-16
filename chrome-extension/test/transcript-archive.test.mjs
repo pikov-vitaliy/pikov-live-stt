@@ -228,7 +228,7 @@ test("Markdown export contains the complete archive and marks an unfinished tail
   assert.match(markdown, /Промежуточный экспорт/);
   assert.match(markdown, /Реплика 300/);
   assert.match(markdown, /&lt;script&gt;/);
-  assert.doesNotMatch(markdown, /<script>/);
+  assert.doesNotMatch(markdown, /<script>/i);
   assert.match(markdown, /## Нефинализированный фрагмент/);
   assert.match(markdown, /Незавершённая реплика/);
 });
