@@ -1,16 +1,22 @@
-"""Copy core files from web directory to Chrome extension directory."""
+"""Copy core files from web directory to Chrome extension directory.
+
+Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
+"""
 
 import shutil
 from pathlib import Path
 
 
-def sync_extension_files():
-
-    web_dir = Path("whisperlivekit/web")
-    extension_dir = Path("chrome-extension")
+def sync_extension_files(
+    web_dir: Path = Path("whisperlivekit/web"),
+    extension_dir: Path = Path("chrome-extension"),
+):
 
     files_to_sync = [
-        "live_transcription.html", "live_transcription.js", "live_transcription.css"
+        "live_transcription.html",
+        "live_transcription.js",
+        "live_transcription.css",
+        "text_safety.js",
     ]
 
     svg_files = [

@@ -1,3 +1,6 @@
+// Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
+const { escapeHtml } = globalThis.WhisperLiveKitTextSafety;
+
 const isExtension = typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.getURL;
 if (isExtension) {
   document.documentElement.classList.add('is-extension');
@@ -473,74 +476,75 @@ function renderLinesWithBuffer(
     .map((item, idx) => {
       let timeInfo = "";
       if (item.start !== undefined && item.end !== undefined) {
-        timeInfo = ` ${item.start} - ${item.end}`;
+        timeInfo = ` ${escapeHtml(item.start)} - ${escapeHtml(item.end)}`;
       }
 
       let speakerLabel = "";
       if (item.speaker === -2) {
         speakerLabel = `<span class="silence">${silenceIcon}<span id='timeInfo'>${timeInfo}</span></span>`;
       } else if (item.speaker == 0 && !isFinalizing) {
-        speakerLabel = `<span class='loading'><span class="spinner"></span><span id='timeInfo'><span class="loading-diarization-value">${fmt1(
+        speakerLabel = `<span class='loading'><span class="spinner"></span><span id='timeInfo'><span class="loading-diarization-value">${escapeHtml(fmt1(
           remaining_time_diarization
-        )}</span> second(s) of audio are undergoing diarization</span></span>`;
+        ))}</span> second(s) of audio are undergoing diarization</span></span>`;
       } else if (item.speaker !== 0) {
-        const speakerNum = `<span class="speaker-badge">${item.speaker}</span>`;
+        const speakerNum = `<span class="speaker-badge">${escapeHtml(item.speaker)}</span>`;
         speakerLabel = `<span id="speaker">${speakerIcon}${speakerNum}<span id='timeInfo'>${timeInfo}</span></span>`;
 
         if (item.detected_language) {
-          speakerLabel += `<span class="label_language">${languageIcon}<span>${item.detected_language}</span></span>`;
+          speakerLabel += `<span class="label_language">${languageIcon}<span>${escapeHtml(item.detected_language)}</span></span>`;
         }
       }
 
-      let currentLineText = item.text || "";
+      let currentLineText = escapeHtml(item.text || "");
 
       if (idx === visibleLines.length - 1) {
         if (!isFinalizing && item.speaker !== -2) {
           if (showComputeLag) {
-            speakerLabel += `<span class="label_compute" title="Audio received but not processed yet"><span class="spinner"></span>Compute <span id='timeInfo'><span class="lag-compute-value">${fmt1(
+            speakerLabel += `<span class="label_compute" title="Audio received but not processed yet"><span class="spinner"></span>Compute <span id='timeInfo'><span class="lag-compute-value">${escapeHtml(fmt1(
               computeLag
-            )}</span>s</span></span>`;
+            ))}</span>s</span></span>`;
           }
 
           if (showPolicyLag) {
-            speakerLabel += `<span class="label_policy" title="Processed audio waiting for streaming stabilization">Policy <span id='timeInfo'><span class="lag-policy-value">${fmt1(
+            speakerLabel += `<span class="label_policy" title="Processed audio waiting for streaming stabilization">Policy <span id='timeInfo'><span class="lag-policy-value">${escapeHtml(fmt1(
               policyLag
-            )}</span>s</span></span>`;
+            ))}</span>s</span></span>`;
           }
 
           if (buffer_diarization && remaining_time_diarization) {
-            speakerLabel += `<span class="label_diarization"><span class="spinner"></span>Diarization lag<span id='timeInfo'><span class="lag-diarization-value">${fmt1(
+            speakerLabel += `<span class="label_diarization"><span class="spinner"></span>Diarization lag<span id='timeInfo'><span class="lag-diarization-value">${escapeHtml(fmt1(
               remaining_time_diarization
-            )}</span>s</span></span>`;
+            ))}</span>s</span></span>`;
           }
         }
 
         if (buffer_diarization) {
           if (isFinalizing) {
             currentLineText +=
-              (currentLineText.length > 0 && buffer_diarization.trim().length > 0 ? " " : "") + buffer_diarization.trim();
+              (currentLineText.length > 0 && buffer_diarization.trim().length > 0 ? " " : "") +
+              escapeHtml(buffer_diarization.trim());
           } else {
-            currentLineText += `<span class="buffer_diarization">${buffer_diarization}</span>`;
+            currentLineText += `<span class="buffer_diarization">${escapeHtml(buffer_diarization)}</span>`;
           }
         }
         if (buffer_transcription) {
           if (isFinalizing) {
             currentLineText +=
               (currentLineText.length > 0 && buffer_transcription.trim().length > 0 ? " " : "") +
-              buffer_transcription.trim();
+              escapeHtml(buffer_transcription.trim());
           } else {
-            currentLineText += `<span class="buffer_transcription">${buffer_transcription}</span>`;
+            currentLineText += `<span class="buffer_transcription">${escapeHtml(buffer_transcription)}</span>`;
           }
         }
       }
       let translationContent = "";
       if (item.translation) {
-        translationContent += item.translation.trim();
+        translationContent += escapeHtml(item.translation.trim());
       }
       if (idx === visibleLines.length - 1 && buffer_translation) {
         const bufferPiece = isFinalizing
-          ? buffer_translation
-          : `<span class="buffer_translation">${buffer_translation}</span>`;
+          ? escapeHtml(buffer_translation)
+          : `<span class="buffer_translation">${escapeHtml(buffer_translation)}</span>`;
         translationContent += translationContent ? `${bufferPiece}` : bufferPiece;
       }
       if (translationContent.trim().length > 0) {

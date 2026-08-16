@@ -1,3 +1,4 @@
+# Modified in 2026 by Vitaly Pikov for Pikov LiveSTT; based on WhisperLiveKit.
 import base64
 import importlib.resources as resources
 import logging
@@ -22,6 +23,8 @@ def get_inline_ui_html():
             css_content = f.read()
         with resources.files('whisperlivekit.web').joinpath('live_transcription.js').open('r', encoding='utf-8') as f:
             js_content = f.read()
+        with resources.files('whisperlivekit.web').joinpath('text_safety.js').open('r', encoding='utf-8') as f:
+            text_safety_content = f.read()
 
         with resources.files('whisperlivekit.web').joinpath('pcm_worklet.js').open('r', encoding='utf-8') as f:
             worklet_code = f.read()
@@ -59,6 +62,11 @@ def get_inline_ui_html():
         html_content = html_content.replace(
             '<link rel="stylesheet" href="live_transcription.css" />',
             f'<style>\n{css_content}\n</style>'
+        )
+
+        html_content = html_content.replace(
+            '<script src="text_safety.js"></script>',
+            f'<script>\n{text_safety_content}\n</script>'
         )
 
         html_content = html_content.replace(
