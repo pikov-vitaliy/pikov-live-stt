@@ -323,6 +323,7 @@ function resetTranscript() {
         bufferTranscription: "",
     };
     hiddenTextByKey.clear();
+    panelLastWritten = null;
     followTail = true;
 }
 
@@ -440,17 +441,48 @@ async function microphoneGranted() {
  * write it itself, in which case the file stops updating while the panel is
  * closed — and the status line says so rather than pretending otherwise.
  */
+let panelWriteQueue = Promise.resolve();
+let panelLastWritten = null;
+
 async function writeFileFromPanel() {
     if (!fileHandle || offscreenWritesFile) {
         return;
     }
-    try {
-        await writeTranscriptFile(fileHandle, markdownForExport("dialogue"));
-        lastFileError = null;
-    } catch (error) {
-        lastFileError = error instanceof Error ? error.message : String(error);
-        setFileStatus(`Запись в файл не удалась: ${lastFileError}`);
+
+    // Serialised and deduplicated, exactly like TranscriptFileWriter. Firing
+    // this straight from the transcript handler means up to twenty calls a
+    // second, and each one truncates the file before rewriting it — overlapping
+    // writes on one handle would leave it empty or half-written.
+    panelWriteQueue = panelWriteQueue.then(async () => {
+        if (!fileHandle || offscreenWritesFile) {
+            return;
+        }
+        const contents = markdownForExport("dialogue");
+        if (contents === panelLastWritten) {
+            return;
+        }
+        try {
+            await writeTranscriptFile(fileHandle, contents);
+            panelLastWritten = contents;
+            lastFileError = null;
+        } catch (error) {
+            lastFileError = error instanceof Error ? error.message : String(error);
+            setFileStatus(`Запись в файл не удалась: ${lastFileError}`);
+        }
+    });
+    return panelWriteQueue;
+}
+
+/** The meeting the file belonged to is over: stop holding its handle. */
+function releaseFileLink(reason) {
+    if (!fileHandle) {
+        return;
     }
+    fileHandle = null;
+    panelLastWritten = null;
+    offscreenWritesFile = false;
+    setFileStatus(reason);
+    updateControls();
 }
 
 async function linkLiveFile() {
@@ -550,6 +582,8 @@ chrome.runtime.onMessage.addListener((message) => {
         // Show the failure without touching session state: the capture the
         // panel is attached to may well still be running.
         setStatus("", message.error || "Не удалось запустить транскрипцию.");
+    } else if (message.type === "file-released") {
+        releaseFileLink("Файл этой встречи отвязан. Для новой записи выберите файл заново.");
     } else if (message.type === "file-status") {
         offscreenWritesFile = Boolean(message.status?.attached);
         lastFileError = message.status?.error || null;
@@ -638,7 +672,9 @@ microphoneToggle.addEventListener("change", async () => {
     }
 
     if (!wanted) {
-        setMicrophoneStatus("Микрофон не записывается — в стенограмму попадут только участники.");
+        setMicrophoneStatus(isCapturing() || isPaused()
+            ? "Текущая запись продолжается с микрофоном — настройка применится со следующего запуска захвата."
+            : "Микрофон не записывается — в стенограмму попадут только участники.");
         return;
     }
 

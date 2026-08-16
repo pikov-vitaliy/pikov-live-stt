@@ -73,7 +73,7 @@ if ($LASTEXITCODE -ne 0) {
         $startError = docker inspect --format '{{.State.Error}}' $ContainerName 2>$null
         if ($startError -match 'no adapters were found') {
             Write-Bad "Контейнер не стартует: WSL не видит видеокарту." `
-                "Так бывает после обновления драйвера NVIDIA без перезагрузки. Перезагрузите Windows, затем: docker compose -f $ComposeFile up -d --wait"
+                "Так бывает после обновления драйвера NVIDIA. Выполните wsl --shutdown, дождитесь Docker Desktop, затем: docker compose -f $ComposeFile up -d --wait"
         } elseif ($startError -match 'nvidia|cuda|gpu') {
             Write-Bad "Контейнер не стартует из-за GPU: $startError" `
                 "Перезагрузите Windows и повторите запуск."
@@ -121,7 +121,8 @@ if (-not (Test-Path $sample) -or (Get-Item $sample).Length -eq 0) {
         Write-Host "        загружаю образец речи..." -ForegroundColor DarkGray
         Invoke-WebRequest -Uri "https://github.com/ggerganov/whisper.cpp/raw/master/samples/jfk.wav" -OutFile $sample -TimeoutSec 30
     } catch {
-        Write-Host "        образец скачать не удалось, шаг пропущен" -ForegroundColor Yellow
+        Write-Bad "Образец речи недоступен — распознавание НЕ проверено." `
+            "Проверьте сеть или положите любой речевой .wav по пути $sample. Без этого шага зелёный итог ничего не гарантирует."
     }
 }
 
@@ -151,8 +152,8 @@ Write-Step "Журнал контейнера"
 $log = docker logs --tail $LogLines $ContainerName 2>&1 | Out-String
 
 $signatures = @(
-    @{ Pattern = 'CUDA failed with error'; Advice = 'GPU недоступен контейнеру. После обновления драйвера NVIDIA перезагрузите Windows, затем: docker compose -f ' + $ComposeFile + ' up -d --force-recreate --wait' },
-    @{ Pattern = 'no adapters were found';  Advice = 'WSL не видит видеокарту. Перезагрузите Windows.' },
+    @{ Pattern = 'CUDA failed with error'; Advice = 'GPU недоступен контейнеру. После обновления драйвера NVIDIA выполните wsl --shutdown — проверено, этого достаточно, перезапуск одного дистрибутива не помогает. Дождитесь Docker Desktop, затем: docker compose -f ' + $ComposeFile + ' up -d --force-recreate --wait' },
+    @{ Pattern = 'no adapters were found';  Advice = 'WSL не видит видеокарту. Выполните wsl --shutdown и запустите Docker Desktop заново; перезагрузка Windows нужна, только если это не помогло.' },
     @{ Pattern = 'out of memory';           Advice = 'Не хватает видеопамяти. Возьмите модель полегче: WLK_MODEL=large-v3-turbo в .env, затем пересоздайте контейнер.' },
     @{ Pattern = 'Exception in transcription_processor'; Advice = 'Распознавание падает. Полный текст: docker compose -f ' + $ComposeFile + ' logs --tail 200' }
 )

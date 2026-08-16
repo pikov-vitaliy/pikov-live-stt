@@ -213,7 +213,7 @@ export class CaptureSession {
             // recorder while sending only tab audio to the speakers — routing
             // the microphone there would play the user back to themselves.
             this.audioOutput = await this.createAudioOutput(this.stream, this.microphoneStream);
-            this.openSegment(this.title);
+            this.openSegment(this.title, { fallbackToSessionTitle: true });
             const socket = this.createWebSocket(websocketUrl);
             this.socket = socket;
             socket.binaryType = "arraybuffer";
@@ -315,15 +315,10 @@ export class CaptureSession {
             return false;
         }
 
-        const recorder = this.recorder;
-        if (recorder && typeof recorder.pause === "function") {
-            try {
-                recorder.pause();
-            } catch {
-                // Already paused or already finished — the state below still holds.
-            }
-        }
-
+        // The recorder is deliberately NOT paused here. It must keep encoding
+        // for a moment so the silence below actually reaches the server —
+        // pausing first produces no bytes at all and defeats the whole point.
+        //
         // Silence immediately — both the recorder feed and the microphone
         // itself. From this instant nothing of the user's can be captured.
         this.audioOutput?.setCaptureMuted?.(true);
@@ -398,14 +393,19 @@ export class CaptureSession {
      * the server-side time at which it opened, because the server timeline is
      * what the archive keys on.
      */
-    openSegment(title) {
+    openSegment(title, { fallbackToSessionTitle = false } = {}) {
         const lastKnownEnd = this.archive.entries.length
             ? this.archive.entries[this.archive.entries.length - 1].end
             : "";
+        // Only the FIRST segment may borrow the session title. On resume the
+        // user has moved on to something else, so falling back would label the
+        // new stretch with the first video of the evening — worse than leaving
+        // it unnamed.
+        const name = String(title || (fallbackToSessionTitle ? this.title : "") || "");
         this.segments.push({
             index: this.segments.length + 1,
             startedAt: new Date().toISOString(),
-            title: String(title || this.title || ""),
+            title: name,
             fromServerTime: lastKnownEnd,
         });
     }

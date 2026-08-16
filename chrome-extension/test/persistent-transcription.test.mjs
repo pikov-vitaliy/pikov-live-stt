@@ -520,6 +520,33 @@ test("a brand new line after clearing is shown in full", async () => {
   }
 });
 
+test("the panel lets go of the file when the meeting that owned it ends", async () => {
+  const harness = await createSidePanelHarness();
+  try {
+    const panelMessageHandler = harness.panelMessageHandler();
+
+    // The offscreen document reports the file attached during the meeting...
+    panelMessageHandler({ target: "ui", type: "file-status", status: { attached: true, error: null } });
+    await settleRender();
+
+    // ...and then releases it when the session ends. If the panel kept its own
+    // handle here, the NEXT capture would rewrite this meeting's .md from
+    // scratch on every server update.
+    panelMessageHandler({ target: "ui", type: "file-released" });
+    await settleRender();
+
+    assert.equal(
+      harness.elements.get("linkFileButton").hidden,
+      false,
+      "with no file linked, the panel must offer to link one again",
+    );
+    assert.equal(harness.elements.get("unlinkFileButton").hidden, true);
+    assert.match(harness.elements.get("fileStatus").textContent, /отвязан/i);
+  } finally {
+    harness.restore();
+  }
+});
+
 test("the microphone can be asked for while a capture is already running", async () => {
   const harness = await createSidePanelHarness();
   try {

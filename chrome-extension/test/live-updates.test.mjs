@@ -228,7 +228,8 @@ test("a failing autosave is reported instead of becoming an uncaught rejection",
 });
 
 function createSessionHarness(overrides = {}) {
-  const calls = { recorderPauses: 0, recorderResumes: 0, tabTrackStops: 0, micTrackStops: 0 };
+  const calls = { recorderPauses: 0, recorderResumes: 0, tabTrackStops: 0, micTrackStops: 0, muted: [] };
+  const timers = [];
   const tabTrack = { stop() { calls.tabTrackStops += 1; }, addEventListener() {} };
   const micTrack = { stop() { calls.micTrackStops += 1; }, addEventListener() {} };
   const tabStream = { getTracks: () => [tabTrack], getAudioTracks: () => [tabTrack] };
@@ -245,11 +246,18 @@ function createSessionHarness(overrides = {}) {
   const socket = { readyState: 1, send() {}, close() {} };
 
   return {
-    calls, tabStream, micStream, mixedStream, recorder, socket,
+    calls, tabStream, micStream, mixedStream, recorder, socket, timers,
+    runTimers() { for (const t of timers.splice(0)) { t?.(); } },
     options: {
       createCapturedStream: async () => tabStream,
       createMicrophoneStream: async () => micStream,
-      createAudioOutput: async (tab, mic) => ({ stream: mic ? mixedStream : tab, close: async () => {} }),
+      createAudioOutput: async (tab, mic) => ({
+        stream: mic ? mixedStream : tab,
+        setCaptureMuted: (muted) => calls.muted.push(muted),
+        close: async () => {},
+      }),
+      schedule: (callback) => { timers.push(callback); return timers.length; },
+      cancelSchedule: (handle) => { timers[handle - 1] = null; },
       createRecorder: (stream) => { recorder.recorded = stream; return recorder; },
       createWebSocket: () => socket,
       publish: () => {},
@@ -276,7 +284,16 @@ test("pause stops the recorder without releasing the captured tab", async () => 
   assert.equal(session.pause(), true);
 
   assert.equal(session.snapshot.state, "paused");
-  assert.equal(harness.calls.recorderPauses, 1, "the recorder itself must pause, not have its chunks dropped");
+  assert.deepEqual(harness.calls.muted, [true], "the capture leg must be silenced at once");
+  assert.equal(
+    harness.calls.recorderPauses,
+    0,
+    "the encoder must keep running on that silence — pausing it now would send the server nothing, "
+      + "and the server needs to HEAR silence to close its open line",
+  );
+
+  harness.runTimers();
+  assert.equal(harness.calls.recorderPauses, 1, "only then is the recorder itself paused");
   assert.equal(harness.calls.tabTrackStops, 0, "the tab must stay captured across a pause");
   assert.equal(harness.socket.readyState, 1, "the socket must stay open");
   assert.equal(session.pause(), false, "pausing twice is a no-op");

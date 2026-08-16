@@ -196,6 +196,10 @@ async function releaseLiveFile() {
         // Nothing stored, or storage unavailable — either way we are detached.
     }
     publishFileStatus();
+    // Told explicitly rather than inferred from `attached: false`, which also
+    // means "attaching failed, you write it". The panel must drop its own copy
+    // of the handle here, or the next capture rewrites this meeting's file.
+    publishToPanel({ type: "file-released" });
 }
 
 /** Never lets a file problem reject into the capture's promise chain. */
@@ -228,7 +232,11 @@ const session = new CaptureSession({
     onPreempted: async (carriedTranscript) => {
         // Store only. Tearing the session down here would kill the offscreen
         // document the replacement capture is about to use.
+        // Same discipline as onEnded: write the outgoing meeting out, then let
+        // go of its file. Skipping this let the replacement capture inherit the
+        // handle and rewrite the previous meeting's .md from scratch.
         await flushLiveFileSafely(carriedTranscript);
+        await releaseLiveFile();
         await notifyBackground({ type: "transcript-preempted", completedTranscript: carriedTranscript });
     },
     onAutosave: async (snapshot) => {
